@@ -1,1 +1,2 @@
-target1 ansible_host=172.31.16.168 ansible_user=ec2-user ansible_ssh_private_key_file=aws_key.pem
+target1 ansible_host=172.31.16.168
+target2 ansible_host=172.31.31.20
