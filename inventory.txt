@@ -1,0 +1,9 @@
+target1 ansible_host=172.31.16.168 ansible_ssh_pass=osboxes.org ansible_user=root
+target2 ansible_host=172.31.31.20 ansible_ssh_pass=osboxes.org ansible_user=root
+
+
+target2 ansible_host=172.31.31.20 ansible_user=ec2-user ansible_ssh_private_key_file=aws_key.pem
+target3 ansible_host=172.31.31.113 ansible_user=ec2-user ansible_ssh_private_key_file=aws_key.pem
+target4 ansible_host=172.31.26.157 ansible_user=ec2-user ansible_ssh_private_key_file=aws_key.pem
+target5 ansible_host=172.31.42.136 ansible_user=ubuntu ansible_ssh_private_key_file=aws_key.pem
+target6 ansible_host=172.31.21.191 ansible_user=ec2-user ansible_ssh_private_key_file=aws_key.pem
