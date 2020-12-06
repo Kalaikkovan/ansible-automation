@@ -2,12 +2,13 @@
 -
   become: true
   hosts: all
-  name: "This playbook is going to apply the OS patches "
+  name: "This playbook is going to apply the OS patches {{ inventory_hostname }}"
   serial: 1
   gather_facts: false
   tasks:
     -
-        include_vars: variables.yml
+      name: getting variables
+      include_vars: variables.yml
     -
       name: "This play is to stop the application processes on {{ inventory_hostname }}"
       shell:
