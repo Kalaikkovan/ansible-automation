@@ -1,2 +1,3 @@
 target1 ansible_host=172.31.16.168
 target2 ansible_host=172.31.31.20
+target3 ansible_host=172.31.31.113
