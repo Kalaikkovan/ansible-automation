@@ -1,0 +1,77 @@
+---
+-
+  become: true
+  hosts: all
+  name: "This playbook is going to apply the OS patches {{ inventory_hostname }}"
+  serial: 1
+  gather_facts: false
+  tasks:
+    -
+      name: getting variables
+      include_vars: variables.yml
+    -
+      name: "This play is to stop the application processes on {{ inventory_hostname }}"
+      shell:
+        "./stop.sh"
+      args:
+        chdir: "/home/ansible"
+
+    -
+      ignore_errors: true
+      name: "This play is to verify if any application process is still running"
+      register: app_process_check
+      shell: "if ps -eaf | egrep {{service1}} |grep -v grep > /dev/null ;then echo 'process_running';else echo 'process_not_running';fi"
+
+    -
+      fail: "msg=\"{{ inventory_hostname }} have running Application processes.Please stop the application first, then attempt patching.\""
+      name: "decision point to start patching"
+      when: "app_process_check.stdout == \"process_running\""
+
+    -
+      name: "This play will upgrade all packages on the server - yum update"
+      register: yum_update
+      when: "app_process_check.stdout == \"process_not_running\""
+      yum: "name=\"kernel\" state=latest"
+    -
+      ignore_errors: true
+      name: "check if reboot is required after kernel update - This is to verify if the kernel version is up to date"
+      register: reboot_required
+      shell: "KERNEL_NEW=$(rpm -q --last kernel |head -1 | awk '{print $1}' | sed 's/kernel-//'); KERNEL_NOW=$(uname -r); if [[ $KERNEL_NEW != $KERNEL_NOW ]]; then echo \"reboot_needed\"; else echo \"reboot_not_needed\"; fi"
+    -
+      name: Play is to invoke the Reboot of the host and wait for it to come up
+      reboot:
+        msg: "Reboot initiated by Ansible"
+        connect_timeout: 5
+        reboot_timeout: 600
+        post_reboot_delay: 20
+        test_command: whoami
+      register: reboot_started
+      when: "reboot_required.stdout == \"reboot_needed\""
+
+    -
+      name: Getting stats of the FS object
+      stat:
+        path: /home/ansible/
+      register: sym
+
+    -
+     name: Play is to start the httpd processes
+     shell:
+        "./start.sh"
+     args:
+        chdir: "/home/ansible"
+    -
+        name: Play is to check if port 80 is up and listening
+        wait_for:
+          port: 80
+          delay: 5
+          timeout: 10
+          msg: "Timeout waiting for 80 to respond"
+        register: port_check
+        ignore_errors: yes
+    -
+      name: Play is to start the Application processes
+      shell:
+         "./start.sh"
+      args:
+         chdir: "/home/ansible"
